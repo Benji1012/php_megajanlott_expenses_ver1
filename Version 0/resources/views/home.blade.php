@@ -7,6 +7,7 @@
    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css%22%3E">
    --> <link rel="stylesheet" href="{{ asset ('home.css') }}">
    
+   
 </head>
 <body>
 
@@ -44,26 +45,28 @@
                     <button>Save expense</button>
                 </form>
             </div>
-            <!--<div>
+            <div>
                 <h2>Filters</h2>
-                <form action="/filter-expense" method="POST">
+                <form action="/filter-expense" method="GET">
                     @csrf
-                    <input type="text" name="storeFilter" placeholder="Store name">
-                    <input type="number" name="amountBiggerFilter" placeholder="Bigger amount than...">
-                    <input type="number" name="amountSmallerFilter" placeholder="Smaller amount than...">
+                    <input type="text" name="storeFilter" value="" placeholder="Store name">
+                    <input type="number" name="amountBiggerFilter" value="" placeholder="Bigger amount than...">
+                    <input type="number" name="amountSmallerFilter" value="" placeholder="Smaller amount than...">
                     <label for="whenFromFilter">After:</label>
                     <input type="date" name="whenFromFilter">
                     <label for="whenToFilter">Before:</label>
                     <input type="date" name="whenToFilter">
-                    <label for="paymentType">Type of payment</label>
-                    <select id="paymentType" name="paymentType">
+                    <label for="paymentTypeFilter">Type of payment</label>
+                    <select id="paymentType" name="paymentTypeFilter">
+                        <option value="All">All</option>
                         <option value="Cash">Cash</option>
                         <option value="Voucher">Voucher</option>
                         <option value="CreditCard">Credit Card</option>
                     </select>
                     </select>
-                    <label for="paymentType">Type of Expense</label>
-                    <select id="type" name="type" >
+                    <label for="typeFilter">Type of Expense</label>
+                    <select id="type" name="typeFilter" >
+                        <option value="All">All</option>
                         <option value="Shopping">Shopping</option>
                         <option value="Bill">Bill</option>
                         <option value="Restaurant">Restaurant</option>
@@ -71,47 +74,71 @@
                         <option value="Other">Other</option>
                     </select>
                     <button type="submit">Filter</button>
+                    <form action="/" method="GET">
+                        @csrf
+                        <button type="submit">Clear Filters</button>
+                    </form>
+                    <form action="/filter-expense-diagram" method="GET" target="_blank">
+                        @csrf
+                        <input type="hidden" name="storeFilter" value="{{ request('storeFilter') }}">
+                        <input type="hidden" name="amountBiggerFilter" value="{{ request('amountBiggerFilter') }}">
+                        <input type="hidden" name="amountSmallerFilter" value="{{ request('amountSmallerFilter') }}">
+                        <input type="hidden" name="whenFromFilter" value="{{ request('whenFromFilter') }}">
+                        <input type="hidden" name="whenToFilter" value="{{ request('whenToFilter') }}">
+                        <input type="hidden" name="paymentTypeFilter" value="{{ request('paymentTypeFilter') }}">
+                        <input type="hidden" name="typeFilter" value="{{ request('typeFilter') }}">
+                        <button type="submit">Generate Diagram</button>
+                    </form>
+                    <form action="/create-pdf" method="GET" target="_blank">
+                        @csrf
+                        <input type="hidden" name="storeFilter" value="{{ request('storeFilter') }}">
+                        <input type="hidden" name="amountBiggerFilter" value="{{ request('amountBiggerFilter') }}">
+                        <input type="hidden" name="amountSmallerFilter" value="{{ request('amountSmallerFilter') }}">
+                        <input type="hidden" name="whenFromFilter" value="{{ request('whenFromFilter') }}">
+                        <input type="hidden" name="whenToFilter" value="{{ request('whenToFilter') }}">
+                        <input type="hidden" name="paymentTypeFilter" value="{{ request('paymentTypeFilter') }}">
+                        <input type="hidden" name="typeFilter" value="{{ request('typeFilter') }}">
+                        <button type="submit">Create PDF</button>
+                    </form>
                 </form>
-
-            -->
+            
 
             </div>
             <div style="border: 3px solid black;">
                 <h2>All expenses</h2>
                 <table>
-                    <tr>
-                        <th>Store Name</th>
-                        <th>Amount</th>
-                        <th>Date</th>
-                        <th>Type of Payment</th>
-                        <th>Expense type</th>
-                        <th>Comment</th>
-                    </tr>
+                    <thead>
+                        <tr>
+                            <th>Store Name</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Type of Payment</th>
+                            <th>Expense type</th>
+                            <th>Comment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($expenses as $expense)
+                        <tr>
+                            <td>{{$expense->store}}</td>
+                            <td>{{$expense->amount}}</td>
+                            <td>{{$expense->when}}</td>
+                            <td>{{$expense->paymentType}}</td>
+                            <td>{{$expense->type}}</td>
+                            <td>{{$expense->comment}}</td>
+                            <td>
+                                <a href="/edit-expense/{{$expense->id}}">Edit</a>
+                                <form action="delete-expense/{{$expense->id}}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button>Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
                 </table>
-                @foreach($expenses as $expense)
-                    <div style="background-color: gray; padding: 10px; margin: 10px;">
-
-                        <table>
-                            <tr>
-                                <td>{{$expense['store']}}</td>
-                                <td>{{$expense['amount']}}</td>
-                                <td>{{$expense['when']}}</td>
-                                <td>{{$expense['paymentType']}}</td>
-                                <td>{{$expense['type']}}</td>
-                                <td>{{$expense['comment']}}</td>
-                            </tr>
-
-
-                        </table>
-                        <p><a href="/edit-expense/{{$expense->id}}">Edit</a></p>
-                        <form action="delete-expense/{{$expense->id}}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button>Delete</button>
-                        </form>
-                    </div>
-
-                @endforeach
             </div>
 
         </div>
